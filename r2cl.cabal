@@ -18,6 +18,7 @@ library
       R2CL.Changelog
       R2CL.Changelog.Build
       R2CL.Changelog.Render
+      R2CL.Changelog.Update
       R2CL.ChangelogSection
       R2CL.GitHub
       R2CL.GitHub.Repository

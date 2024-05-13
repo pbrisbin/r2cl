@@ -8,10 +8,8 @@ module R2CL.ChangelogSection
 
 import Relude
 
-import R2CL.GitHub.Repository
 import R2CL.Ref
 import R2CL.Release
-import R2CL.Version
 
 data ChangelogSection = ChangelogSection
   { name :: Text

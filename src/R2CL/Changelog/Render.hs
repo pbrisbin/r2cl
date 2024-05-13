@@ -4,13 +4,11 @@ module R2CL.Changelog.Render
 
 import Relude
 
-import Data.Text (pack)
 import Data.Text qualified as T
 import R2CL.Changelog
 import R2CL.ChangelogSection
 import R2CL.GitHub.Repository
 import R2CL.Ref
-import R2CL.Version
 
 renderChangelog :: Repository -> BranchName -> Changelog -> Text
 renderChangelog repository defaultBranch changelog =
@@ -27,7 +25,6 @@ renderChangelogSection repository defaultBranch section =
     , section.notes
     ]
  where
-  linkText = section.name
   linkUrl = case (section.ref, section.previousRef) of
     (Just ref, Just previousRef) -> compareUrl repository previousRef ref
     (Just ref, Nothing) -> treeUrl repository ref

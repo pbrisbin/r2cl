@@ -6,13 +6,10 @@ module R2CL.GitHub.Repository
   , Repository (..)
   , readRepository
   , repositoryUrlPiece
-  , inferRepository
-  , inferDefaultBranch
   ) where
 
 import Relude
 
-import Data.List (break)
 import Data.Text (pack)
 
 newtype OwnerName = OwnerName {unwrap :: Text}
@@ -48,9 +45,3 @@ readRepository s = case break (== '/') s of
 repositoryUrlPiece :: Repository -> Text
 repositoryUrlPiece repository =
   repository.owner.unwrap <> "/" <> repository.name.unwrap
-
-inferRepository :: m Repository
-inferRepository = undefined
-
-inferDefaultBranch :: MonadIO m => m BranchName
-inferDefaultBranch = pure "main"

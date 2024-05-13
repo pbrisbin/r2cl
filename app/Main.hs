@@ -8,13 +8,14 @@ import Data.Text.IO qualified as T
 import Options.Applicative
 import R2CL.Changelog.Build
 import R2CL.Changelog.Render
+import R2CL.Changelog.Update
 import R2CL.GitHub.Repository
 import R2CL.Release
 import R2CL.Version
 
 data Options = Options
-  { repository :: Maybe Repository
-  , defaultBranch :: Maybe BranchName
+  { repository :: Repository
+  , defaultBranch :: BranchName
   , after :: Maybe Version
   , update :: Maybe FilePath
   }
@@ -22,23 +23,21 @@ data Options = Options
 parseOptions :: Parser Options
 parseOptions =
   Options
-    <$> optional
-      ( option
-          (eitherReader readRepository)
-          ( mconcat
-              [ long "repo"
-              , help "Repository to fetch releases for"
-              , metavar "OWNER/NAME"
-              ]
-          )
+    <$> option
+      (eitherReader readRepository)
+      ( mconcat
+          [ long "repo"
+          , help "Repository to fetch releases for"
+          , metavar "OWNER/NAME"
+          ]
       )
-    <*> optional
-      ( strOption
-          ( mconcat
-              [ long "default-branch"
-              , help "Branch to use in Unreleased section"
-              ]
-          )
+    <*> strOption
+      ( mconcat
+          [ long "default-branch"
+          , help "Branch to use in Unreleased section"
+          , value "main"
+          , showDefault
+          ]
       )
     <*> optional
       ( option
@@ -64,13 +63,14 @@ parseOptions =
 main :: IO ()
 main = do
   options <- execParser $ info (parseOptions <**> helper) mempty
-  repository <- maybe inferRepository pure $ options.repository
-  defaultBranch <- maybe inferDefaultBranch pure $ options.defaultBranch
-  releases <- fetchReleases repository options.after
+  releases <- fetchReleases options.repository options.after
 
   let rendered =
-        renderChangelog repository defaultBranch
+        renderChangelog options.repository options.defaultBranch
           $ buildChangelog options.after releases
 
-  -- TODO: handle options.update
-  T.putStrLn rendered
+  case options.update of
+    Nothing -> T.putStrLn rendered
+    Just fp -> do
+      putStrLn $ "Updated " <> fp
+      updateChangelog fp rendered
