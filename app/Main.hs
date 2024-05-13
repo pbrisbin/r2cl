@@ -44,7 +44,7 @@ parseOptions =
           (eitherReader readVersion)
           ( mconcat
               [ long "after"
-              , help "Only generate with versions up to the given version"
+              , help "Only generate with versions down to the given version"
               , metavar "vX.Y.Z"
               ]
           )
