@@ -1,6 +1,6 @@
 # R2CL
 
-Fetch release notes from GitHub and format a full CHANGELOG from their notes.
+Fetch releases from GitHub and format a full CHANGELOG from their notes.
 
 ## Installation
 
@@ -10,46 +10,44 @@ TODO
 
 ```console
 % r2cl --help
-TODO
+Usage: r2cl --repo OWNER/NAME [--default-branch ARG] [--after vX.Y.Z]
+            [-u|--update PATH]
+
+Available options:
+  --repo OWNER/NAME        Repository to fetch releases for
+  --default-branch ARG     Branch to use in Unreleased section (default: "main")
+  --after vX.Y.Z           Only generate with versions down to the given version
+  -u,--update PATH         Update PATH in place
+  -h,--help                Show this help text
 ```
+
+`$GITHUB_TOKEN` must be set token a token with `read:content` on the repository.
 
 ## Examples
 
-In the context of a git repository, replacing a full `CHANGELOG.md`:
+Replacing a full `CHANGELOG.md`:
 
 ```console
-r2cl >CHANGELOG.md
+GITHUB_TOKEN=... r2cl --repo foo/bar >CHANGELOG.md
 ```
 
-Explicitly stating the repository:
+## `--update`
 
-```console
-r2cl --repo freckle/stackctl >CHANGELOG.md
-```
+If you pass `--update PATH` the content will be written into that file. Where
+it's written depends on the presence of pragmas.
 
-Updating a portion of `CHANGELOG.md` in place:
+If both `<!-- r2cl BEGIN -->` and `<!-- r2cl END -->` are present, the lines
+between them are *replaced* with the content. If only `BEGIN` present, the lines
+are *inserted* after it. If neither are present, the lines are *inserted* at the
+top of the file. No how it started, after this operation, both `BEGIN` and `END`
+pragmas will be present.
 
-Assume you have a `CHANGELOG.md` that looks like this:
+## `--after`
 
-```md
-<!-- BEGIN r2cl -->
-
-## [v3.2.2.0](...)
-
-...
-```
-
-You can generate a CHANGELOG for only newer versions with:
-
-```console
-r2cl --after v3.2.2.0
-```
-
-And you can write this content after the `BEGIN` line with,
-
-```console
-r2cl --after v3.2.2.0 --update CHANGELOG.md
-```
+If `--after vX.Y.Z` is given, only releases down to that version (exclusive,
+beginning with latest) are included. This allows you to main content for older
+versions manually, while automatically writing in content for newer versions
+(presumably when more details and/or consistent release notes began).
 
 ---
 
