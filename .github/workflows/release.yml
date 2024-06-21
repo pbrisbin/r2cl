@@ -1,0 +1,22 @@
+name: Release
+on:
+  release:
+    types:
+      - released
+  workflow_dispatch:
+    inputs:
+      tag-name:
+        description: "Tag name of the release"
+        required: true
+
+env:
+  TAG_NAME: ${{ github.event.inputs.tag-name || github.event.release.tag_name }}
+
+jobs:
+  update-changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: .
+        with:
+          version: ${{ env.TAG_NAME }}
