@@ -32,9 +32,9 @@ jobs:
           chmod +x ./r2cl
 
       - run: |
-          ./r2cl --repo '${{ inputs.github-repository }}' >CHANGELOG.md
+          ./r2cl --repo '${{ github.repository }}' >CHANGELOG.md
         env:
-          GITHUB_TOKEN: ${{ inputs.github-token }}
+          GITHUB_TOKEN: ${{ github.token }}
 
       - uses: EndBug/add-and-commit@v9
         with:
