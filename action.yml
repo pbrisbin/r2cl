@@ -1,0 +1,65 @@
+name: r2cl
+description: Update and push CHANGELOG.md from release notes
+
+inputs:
+  changelog:
+    descriptoin: "Path to CHANGELOG"
+    default: CHANGELOG.md
+
+  github-repository:
+    description: "Override GitHub repository, if necessary"
+    default: "${{ github.repository }}"
+
+  github-token:
+    description: "Override GitHub token, if necessary"
+    default: "${{ github.token }}"
+
+  commit-message:
+    description: "Commit message"
+    default: "Update CHANGELOG"
+
+  push:
+    description: "Git push changed CHANGELOG.md"
+    default: true
+
+  r2cl-release:
+    description: "r2cl release to use"
+    required: true # TODO default to latest
+
+outputs: {}
+
+runs:
+  using: composite
+  steps:
+    - id: prep
+      shell: bash
+      run: |
+        echo 'r2cl-release=${{ inputs.r2cl-release }}' >>"$GITHUB_OUTPUT"
+
+    - shell: bash
+      if: ${{ runner.os == 'linux' }}
+      run: |
+        # Download r2cl for Linux
+        curl -o r2cl http://github.com/releases/download/${{ steps.prep.outputs.r2cl-release }}/r2cl-linux
+        chmod +x ./r2cl
+
+    - shell: bash
+      if: ${{ runner.os == 'darwin' }}
+      run: |
+        # Download r2cl for MacOS
+        curl -o r2cl http://github.com/releases/download/${{ steps.prep.outputs.r2cl-release }}/r2cl-macos
+        chmod +x ./r2cl
+
+    - shell: bash
+      run: |
+        # Update ${{ inputs.changelog }}
+        ./r2cl --repo '${{ inputs.github-repository }}' >"${{ inputs.changelog }}"
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+
+    - shell: bash
+      run: git commit "${{ inputs.changelog }}" -m 'Update CHANGELOG'
+
+    - shell: bash
+      if: ${{ inputs.push == 'true' }}
+      run: git push
