@@ -11,10 +11,29 @@ concurrency:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os:
+          - macos
+          - linux
+
+        include:
+          - os: macos
+            runner: macos-latest
+          - os: linux
+            runner: ubuntu-latest
+
+    runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
-      - uses: freckle/stack-action@v5
+      - id: stack
+        uses: freckle/stack-action@v5
+      - run: cp -v ${{ steps.stack.outputs.local-install-root }}/bin/r2cl .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: binary-${{ matrix.os }}
+          path: ./r2cl
+          if-no-files-found: error
 
   lint:
     runs-on: ubuntu-latest
@@ -24,3 +43,29 @@ jobs:
       - uses: haskell-actions/hlint-run@v2
         with:
           fail-on: warning
+
+  upload-release-assets:
+    if: ${{ github.ref_name == 'main' }}
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # only users with push access can see Draft releases
+    steps:
+      - uses: actions/download-artifact@v4
+      - run: |
+          for dir in binary-*; do
+            cp -v "$dir"/r2cl ./"r2cl-${dir#*-}"
+          done
+
+      - id: prep
+        run: |
+          gh api '/repos/${{ github.repository }}/releases' --jq '.[] | .id' |
+            head -n 1 |
+            sed 's/^/release-id=/' >>"$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - uses: freckle/action-gh-release@v2
+        with:
+          id: ${{ steps.prep.outputs.release-id }}
+          files: ./r2cl-*
