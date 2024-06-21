@@ -16,7 +16,27 @@ jobs:
   update-changelog:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: ./.
+      - id: app-token
+        uses: actions/create-github-app-token@v1
         with:
-          r2cl-release: ${{ env.TAG_NAME }}
+          app-id: ${{ vars.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          ref: main
+
+      - run: |
+          curl -o r2cl http://github.com/releases/download/${{ env.TAG_NAME }}/r2cl-linux
+          chmod +x ./r2cl
+
+      - run: |
+          ./r2cl --repo '${{ inputs.github-repository }}' >CHANGELOG.md
+        env:
+          GITHUB_TOKEN: ${{ inputs.github-token }}
+
+      - uses: EndBug/add-and-commit@v9
+        with:
+          add: CHANGELOG.md
+          push: true
