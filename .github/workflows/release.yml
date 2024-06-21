@@ -19,4 +19,4 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.
         with:
-          version: ${{ env.TAG_NAME }}
+          r2cl-release: ${{ env.TAG_NAME }}
