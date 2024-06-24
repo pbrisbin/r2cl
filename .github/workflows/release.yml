@@ -29,7 +29,7 @@ jobs:
           persist-credentials: false
 
       - run: |
-          gh release download '${{ env.TAG_NAME }}' --pattern rcl-linux
+          gh release download '${{ env.TAG_NAME }}' --pattern '*-linux'
           mv -v r2cl{-linux,}
           chmod +x ./r2cl
         env:
