@@ -29,15 +29,11 @@ jobs:
           persist-credentials: false
 
       - run: |
-          curl \
-            --fail \
-            --silent \
-            --show-error \
-            --output r2cl \
-            https://github.com/pbrisbin/r2cl/releases/download/${{ env.TAG_NAME }}/r2cl-linux
-
-          file ./r2cl
+          gh release download '${{ env.TAG_NAME }}' --pattern rcl-linux
+          mv -v r2cl{-linux,}
           chmod +x ./r2cl
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - run: |
           ./r2cl --help
