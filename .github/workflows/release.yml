@@ -26,6 +26,7 @@ jobs:
         with:
           token: ${{ steps.app-token.outputs.token }}
           ref: main
+          persist-credentials: false
 
       - run: |
           curl -o r2cl http://github.com/releases/download/${{ env.TAG_NAME }}/r2cl-linux
