@@ -29,16 +29,20 @@ jobs:
           persist-credentials: false
 
       - run: |
-          curl -o r2cl https://github.com/pbrisbin/r2cl/releases/download/${{ env.TAG_NAME }}/r2cl-linux
+          curl \
+            --fail \
+            --silent \
+            --show-error \
+            --output r2cl \
+            https://github.com/pbrisbin/r2cl/releases/download/${{ env.TAG_NAME }}/r2cl-linux
+
+          file ./r2cl
           chmod +x ./r2cl
 
       - run: |
-          gh api '/repos/${{ github.repository }}/releases' --jq '.[] | .id'
-        env:
-          GH_TOKEN: ${{ github.token }}
+          ./r2cl --help
 
       - run: |
-          ./r2cl --help
           ./r2cl --repo '${{ github.repository }}'
 
       # - uses: EndBug/add-and-commit@v9
