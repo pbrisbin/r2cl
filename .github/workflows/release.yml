@@ -16,7 +16,31 @@ jobs:
   update-changelog:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: ./.
+      - id: app-token
+        uses: actions/create-github-app-token@v1
         with:
-          version: ${{ env.TAG_NAME }}
+          app-id: ${{ vars.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          ref: main
+          persist-credentials: false
+
+      - run: |
+          gh release download '${{ env.TAG_NAME }}' --pattern '*-linux'
+          mv -v r2cl{-linux,}
+          chmod +x ./r2cl
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - run: |
+          ./r2cl --repo '${{ github.repository }}' | tee CHANGELOG.md
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - uses: EndBug/add-and-commit@v9
+        with:
+          add: CHANGELOG.md
+          push: false # true
